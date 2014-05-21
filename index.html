@@ -30,21 +30,22 @@
 
 	function start_simulation(){
 
+		// random generator values
 		var seed = 5; var a = 3; var c = 2; var m = 101;
-
-		var period = parseInt(document.getElementById('period').value);
-		var table = document.getElementById('sim-table').getElementsByTagName('tbody')[0];
-		var total_failures = 0;
-		var has_third = 0; 
-		var years = 0;
-
 		var x_stack = [seed];
 		var rnd_stack = [];
 
+		// body table
+		var period = parseInt(document.getElementById('period').value);
+		var new_tbody = document.createElement('tbody');
+
+		// 3 years in a row flag
+		var three_row = 0;
+		var years = 0;
+
 		for (var i = 1; i <= period; i++) {
 			
-			var has_three = 0;
-			var has_third = 0;
+			var gt_three = '';
 
 			x_stack[i] = ((x_stack[i-1] * a) + c ) % m;
 			var rnd = x_stack[i] / (m - 1);
@@ -52,44 +53,45 @@
 			rnd_stack[i] = rnd;
 
 			var failures = get_failures(rnd);
-			total_failures = total_failures + failures;
 
-			if(failures > 0){
+			if(failures > 3){
 				years++;
 				if(years == 3){
-					has_third = 1;
+					three_row = 1;
 					years = 0;
-				}						
+				}
+				gt_three = 'Sí';
 			}else years = 0;
 
-			if(total_failures >= 3){
-				has_three = 1;
-				total_failures = 0;				
-			}
-
-			var row = table.insertRow(i-1);
+			// append rows to table body
+			var row = new_tbody.insertRow(i-1);
 			var cell0 = row.insertCell(0);
 			var cell1 = row.insertCell(1);
 			var cell2 = row.insertCell(2);
 			var cell3 = row.insertCell(3);
 			var cell4 = row.insertCell(4);
-			var cell5 = row.insertCell(5);
-			cell0.innerHTML = i-1;
+			cell0.innerHTML = i;
 			cell1.innerHTML = rnd;
 			cell2.innerHTML = failures;
-			cell3.innerHTML = has_three;
-			cell4.innerHTML = has_third;
-			cell5.innerHTML = has_three * has_third;
+			cell3.innerHTML = gt_three.bold();
+			cell4.innerHTML = three_row;
 		}
+
+		var answer = 'Existe una probabilidad de ' + (three_row / period)  + ' de que el número total de fallas exceda de tres durante tres años consecutivos.';
+
+		// append to table
+		old_tbody = document.getElementById('sim-table').getElementsByTagName('tbody')[0];
+		document.getElementById('sim-table').replaceChild(new_tbody, old_tbody);
+		document.getElementById('answer').innerHTML = answer.bold();
+
+		//debug
 		console.log(rnd_stack);
-		console.log(x_stack);
 	}
 	</script>
 </head>
 <body>
 	<div class="container">
 		<h4>Ejercicio 281 </h4>
-		<!-- <span id="verEjerc" onclick="mostrarEjercicio()">(Ver Ejercicio)</span> -->
 		<hr />
 
 		<p><strong>José es responsable del mantenimiento de una flotilla de vehículos que utiliza la compañía eléctrica para la construcción y reparación de líneas de transmisión eléctrica. Josê está especialmente preocupado por las proyecciones del costo que significa reemplazar una grúa grande en estos vehículos. Durante los últimos 10 años, se sabe que el número de fallas se distribuye según la tabla:</strong></p>
@@ -123,7 +125,7 @@
 					<div class="form-group">
 						<label for="stock" class="col-lg-2 control-label">Período (años)</label>
 						<div class="col-lg-5">
-							<input type="text" class="form-control" id="period" placeholder="" value="20" autofocus="autofocus">
+							<input type="text" class="form-control" id="period" placeholder="" value="25" autofocus="autofocus">
 						</div>
 						<a href="#" name="Simular" onclick="start_simulation()" class="btn btn-primary">Simular</a>
 					</div>
@@ -132,8 +134,8 @@
 			<div class="col-md-6">
 				<table class="table table-striped table-hover table-condensed">
 					<thead>
-						<td># Fallas</td>
-						<td># Años</td>
+						<td>Fallas</td>
+						<td>Años</td>
 						<td>Pr</td>
 						<td>Pr Acum.</td>					
 						<td>Intervalo</td>
@@ -191,14 +193,14 @@
 				<thead>
 					<th>Año</th>
 					<th>RND</th>
-					<th># Fallos</th>
-					<th>>=3 fallas? (A)</th>
-					<th>>=3 años? (B)</th>
-					<th>A * B</th>
+					<th>Nro. de fallos</th>
+					<th>Excede 3 fallas?</th>
+					<th>Acum. 3 años consecutivos</th>
 				</thead>
 				<tbody>
 				</tbody>
 			</table>
+			<p id='answer'></p>
 		</div>
 	</div>
 </body>
